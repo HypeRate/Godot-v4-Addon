@@ -34,8 +34,8 @@ var _heartbeat_timer = Timer.new()
 ## Tells the socket to connect to the HypeRate server
 ## NOTE: This will not happen immediately
 func connect_to_server() -> bool:
-	var endpoint_url = _socket_settings.get_meta("endpoint_url")
-	var token = _socket_settings.get_meta("api_token")
+	var endpoint_url = _socket_settings.endpoint_url
+	var token = _socket_settings.api_token
 
 	if token == null or token.length() == 0:
 		return false
@@ -63,7 +63,7 @@ func _ready():
 	_reconnect_timer.one_shot = true
 	_reconnect_timer.timeout.connect(_on_reconnect)
 
-	_heartbeat_timer.wait_time = _socket_settings.get_meta("heartbeat_interval")
+	_heartbeat_timer.wait_time = _socket_settings.heartbeat_interval
 	_heartbeat_timer.timeout.connect(_on_send_heartbeat)
 
 	add_child(_reconnect_timer)
