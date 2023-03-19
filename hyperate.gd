@@ -94,6 +94,9 @@ func _process(delta):
 			_heartbeat_timer.stop()
 			socket_disconnected.emit()
 
+	if current_state == _websocket_client.STATE_OPEN:
+		_handle_channels()
+
 	if current_state == _websocket_client.STATE_CLOSED and _should_connect == true:
 		reconnect()
 
@@ -116,15 +119,38 @@ func reconnect():
 
 ## Internal callback when the reconnect timer reached its end
 func _on_reconnect():
-	print("Trying to reconnect to HypeRate")
+	# Reset channels
+
+	for intermediate_joining_channel in _channels._intermediate_joining_channels:
+		if _channels._joining_channels.has(intermediate_joining_channel):
+			continue
+		
+		_channels._joining_channels.append(intermediate_joining_channel)
+
+	_channels._intermediate_joining_channels.clear()
+
+	for joined_channel in _channels._joined_channels:
+		if _channels._leaving_channels.has(joined_channel):
+			continue
+
+		if _channels._intermediate_leaving_channels.has(joined_channel):
+			continue
+
+		if _channels._joining_channels.has(joined_channel):
+			continue
+		
+		_channels._joining_channels.append(joined_channel)
+
+	_channels._joined_channels.clear()
+	_channels._intermediate_leaving_channels.clear()
+	_channels._leaving_channels.clear()
+
 	connect_to_server()
 
 ## Internal callback when the heartbeat timer reached its end
 func _on_send_heartbeat():
 	if _websocket_client.get_ready_state() != _websocket_client.STATE_OPEN:
 		return
-
-	print("Sending heartbeat to HypeRate")
 
 	_websocket_client.send_text(JSON.stringify({
 		"topic": "phoenix",
@@ -142,12 +168,55 @@ func _process_packet(packet : PackedByteArray):
 		print("Failed to parse packet: %s" % read_packet)
 		return
 
-	match parsed_packet["topic"]:
-		"phoenix":
-			print("Incoming system packet: %s" % parsed_packet)
-		var topic:
-			print("Incoming packet for topic: %s" % topic)
+	var topic = parsed_packet["topic"]
+
+	if topic.begins_with("hr:") == false:
+		return
+	
+	var extracted_id = topic.substr(3, -1)
+
+	match parsed_packet["event"]:
+		"phx_reply":
+			if _channels._intermediate_joining_channels.has(extracted_id):
+				channel_joined.emit(extracted_id)
+				_channels.add_joined_channel(extracted_id)
+			
+			if _channels._intermediate_leaving_channels.has(extracted_id):
+				channel_left.emit(extracted_id)
+				_channels._intermediate_leaving_channels.erase(extracted_id)
+
+		"hr_update":
+			heartbeat_received.emit(extracted_id, parsed_packet["payload"]["hr"])
+
 
 ## Internal function to build the URL to connect to
 func _build_url(endpoint_url: String, token : String) -> String:
 	return "%s?token=%s" % [endpoint_url, token]
+
+func _handle_channels():
+	var _joined_channels: Array[String] = []
+	var _leaving_channels: Array[String] = []
+
+	# Join channels
+
+	for channel in _channels._joining_channels:
+		var packet_to_send = _channels.get_join_channel_packet(channel)
+		_websocket_client.send_text(packet_to_send)
+
+		_joined_channels.append(channel)
+		_channels._intermediate_joining_channels.append(channel)
+	
+	for channel_to_remove in _joined_channels:
+		_channels._joining_channels.erase(channel_to_remove)
+	
+	# Leave channels
+
+	for channel_to_leave in _channels._leaving_channels:
+		var packet_to_send = _channels.get_leave_channel_packet(channel_to_leave)
+		_websocket_client.send_text(packet_to_send)
+
+		_leaving_channels.append(channel_to_leave)
+		_channels._intermediate_leaving_channels.append(channel_to_leave)
+	
+	for channel_to_leave in _leaving_channels:
+		_channels._leaving_channels.erase(channel_to_leave)
