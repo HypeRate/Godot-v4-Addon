@@ -36,7 +36,7 @@ func add_joined_channel(channel_name : String) -> bool:
     if _intermediate_joining_channels.has(channel_name) == false:
         return false
 
-    _joining_channels.erase(channel_name)
+    _intermediate_joining_channels.erase(channel_name)
     _joined_channels.append(channel_name)
 
     return true
