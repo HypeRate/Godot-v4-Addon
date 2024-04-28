@@ -10,6 +10,8 @@ signal connected
 ## A signal which is called when the connection was closed from the server or due to a disconnect
 signal disconnected
 
+# HypeRate related signals
+
 ## A signal which is called when a new channel was joined
 signal channel_joined(channel_name: String)
 
