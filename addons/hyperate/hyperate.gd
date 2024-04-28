@@ -65,6 +65,18 @@ func disconnect_from_server():
 	_should_disconnect = true
 	_websocket_client.close()
 
+## Tells the socket to reconnect to the HypeRate server
+## NOTE: This will not happen immediately
+func reconnect():
+	if _should_disconnect == true:
+		return
+
+	if _reconnect_timer.is_stopped() == false:
+		return
+
+	_should_disconnect = true
+	_reconnect_timer.start()
+
 func _ready():
 	_reconnect_timer.wait_time = 5
 	_reconnect_timer.one_shot = true
@@ -111,18 +123,6 @@ func _process(delta):
 		_should_disconnect = false
 
 	_last_state = current_state
-
-## Tells the socket to reconnect to the HypeRate server
-## NOTE: This will not happen immediately
-func reconnect():
-	if _should_disconnect == true:
-		return
-
-	if _reconnect_timer.is_stopped() == false:
-		return
-
-	_should_disconnect = true
-	_reconnect_timer.start()
 
 ## Internal callback when the reconnect timer reached its end
 func _on_reconnect():
