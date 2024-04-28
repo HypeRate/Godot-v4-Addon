@@ -47,7 +47,9 @@ func connect_to_server() -> bool:
 	if token == null or token.length() == 0:
 		return false
 
-	var real_url = _build_url(endpoint_url, token)
+	var cleaned_token = token.trim_prefix(" ").trim_prefix("\t").trim_suffix(" ").trim_suffix("\t")
+
+	var real_url = _build_url(endpoint_url, cleaned_token)
 	var error = _websocket_client.connect_to_url(real_url)
 
 	if error:
