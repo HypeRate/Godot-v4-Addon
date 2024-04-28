@@ -6,7 +6,7 @@ class_name hyperate_channels
 var _joining_channels : Array[String] = []
 
 ## Contains all channels where the socket already sent a "join channel" packet
-var _intermediate_joining_channels = []
+var _intermediate_joining_channels: Array[String] = []
 
 ## Contains all channels which where joined
 var _joined_channels  : Array[String] = []
