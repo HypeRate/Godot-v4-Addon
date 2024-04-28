@@ -90,16 +90,16 @@ func _process(delta):
 	match [current_state, _last_state]:
 		[_websocket_client.STATE_OPEN, _websocket_client.STATE_CONNECTING]:
 			_heartbeat_timer.start()
-			socket_connected.emit()
+			connected.emit()
 		[_websocket_client.STATE_OPEN, _websocket_client.STATE_CLOSED]:
 			_heartbeat_timer.start()
-			socket_connected.emit()
+			connected.emit()
 		[_websocket_client.STATE_CLOSED, _websocket_client.STATE_CLOSING]:
 			_heartbeat_timer.stop()
-			socket_disconnected.emit()
+			disconnected.emit()
 		[_websocket_client.STATE_CLOSED, _websocket_client.STATE_OPEN]:
 			_heartbeat_timer.stop()
-			socket_disconnected.emit()
+			disconnected.emit()
 
 	if current_state == _websocket_client.STATE_OPEN:
 		_handle_channels()
