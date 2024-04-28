@@ -19,7 +19,7 @@ signal socket_disconnected
 
 var _websocket_client = WebSocketPeer.new()
 
-var _channels = preload("res://addons/hyperate/channels.gd").new()
+var _channels = preload ("res://addons/hyperate/channels.gd").new()
 
 var _socket_settings = load("res://hyperate.tres")
 
@@ -160,7 +160,7 @@ func _on_send_heartbeat():
 	}))
 
 ## Internal callback when a new packet arrived
-func _process_packet(packet : PackedByteArray):
+func _process_packet(packet: PackedByteArray):
 	var read_packet = packet.get_string_from_utf8()
 	var parsed_packet = JSON.parse_string(read_packet)
 
@@ -188,9 +188,8 @@ func _process_packet(packet : PackedByteArray):
 		"hr_update":
 			heartbeat_received.emit(extracted_id, parsed_packet["payload"]["hr"])
 
-
 ## Internal function to build the URL to connect to
-func _build_url(endpoint_url: String, token : String) -> String:
+func _build_url(endpoint_url: String, token: String) -> String:
 	return "%s?token=%s" % [endpoint_url, token]
 
 func _handle_channels():
