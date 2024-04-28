@@ -2,8 +2,13 @@
 
 extends Node
 
+# Socket related signals
+
 ## A signal which is called when the connection was successfully established
-signal socket_connected
+signal connected
+
+## A signal which is called when the connection was closed from the server or due to a disconnect
+signal disconnected
 
 ## A signal which is called when a new channel was joined
 signal channel_joined(channel_name: String)
@@ -13,9 +18,6 @@ signal heartbeat_received(channel_name: String, heartbeat: int)
 
 ## A signal which is called when a channel was successfully left
 signal channel_left(channel_name: String)
-
-## A signal which is called when the connection was closed from the server or due to a disconnect
-signal socket_disconnected
 
 var _websocket_client = WebSocketPeer.new()
 
