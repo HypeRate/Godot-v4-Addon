@@ -5,7 +5,7 @@ class_name hyperate_channels
 ## Contains all channels which should be joined
 var _joining_channels: Array[String] = []
 
-## Contains all channels where the socket already sent a "join channel" packet
+## Contains all channels where the socket already sent a "join channel" packet but the server response has not yet arrived
 var _intermediate_joining_channels: Array[String] = []
 
 ## Contains all channels which where joined
@@ -14,6 +14,7 @@ var _joined_channels: Array[String] = []
 ## Contains all channels which should be left
 var _leaving_channels: Array[String] = []
 
+## Contains all channels where the socket already sent a "leave channel" packet but the server response has not yet arrived
 var _intermediate_leaving_channels: Array[String] = []
 
 ## Adds the given channel to the list of channels which should be joined
