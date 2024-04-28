@@ -19,7 +19,7 @@ signal socket_disconnected
 
 var _websocket_client = WebSocketPeer.new()
 
-var _channels = preload ("res://addons/hyperate/channels.gd").new()
+var _channels: hyperate_channels = preload ("res://addons/hyperate/channels.gd").new()
 
 var _socket_settings = load("res://hyperate.tres")
 
