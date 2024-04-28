@@ -18,6 +18,9 @@ signal channel_joined(channel_name: String)
 ## A signal which is called when a new heartbeat was received
 signal heartbeat_received(channel_name: String, heartbeat: int)
 
+## A signal which is called when a new clip has been created
+signal clip_created(twitch_slig: String)
+
 ## A signal which is called when a channel was successfully left
 signal channel_left(channel_name: String)
 
