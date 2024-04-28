@@ -18,11 +18,11 @@ func _ready() -> void:
 	_join_channel_timer.start()
 	_leave_channel_timer.start()
 	
-	HypeRate.socket_connected.connect(on_connect)
+	HypeRate.connected.connect(on_connect)
 	HypeRate.channel_joined.connect(on_channel_joined)
 	HypeRate.heartbeat_received.connect(on_heartbeat_received)
 	HypeRate.channel_left.connect(on_channel_left)
-	HypeRate.socket_disconnected.connect(on_disconnect)
+	HypeRate.disconnected.connect(on_disconnect)
 	HypeRate.connect_to_server()
 
 func on_connect():
