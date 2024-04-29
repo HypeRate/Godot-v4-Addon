@@ -1,79 +1,130 @@
-@tool
+class_name HypeRateChannels
 
-class_name hyperate_channels
+var joining_channels: Dictionary = {}
+var joined_channels: Array[String] = []
+var leaving_channels: Dictionary = {}
 
-## Contains all channels which should be joined
-var _joining_channels: Array[String] = []
+## This array contains all currently used refs / request IDs.
+var refs_in_use: Array[int] = []
 
-## Contains all channels where the socket already sent a "join channel" packet but the server response has not yet arrived
-var _intermediate_joining_channels: Array[String] = []
+## The random number generator for generating new refs.
+var rng = RandomNumberGenerator.new()
 
-## Contains all channels which where joined
-var _joined_channels: Array[String] = []
+enum RefType {
+	Unknown,
+	Join,
+	Leave
+}
 
-## Contains all channels which should be left
-var _leaving_channels: Array[String] = []
+enum ChannelType {
+	Unknown,
+	Heartbeat,
+	Clips
+}
 
-## Contains all channels where the socket already sent a "leave channel" packet but the server response has not yet arrived
-var _intermediate_leaving_channels: Array[String] = []
+## Returns the RefType for the given ref
+func get_reftype_by_ref(ref: int) -> RefType:
+	if joining_channels.find_key(ref) != null:
+		return RefType.Join
 
-## Adds the given channel to the list of channels which should be joined
-func add_joining_channel(channel_name: String) -> bool:
-    if _joined_channels.has(channel_name):
-        return false
+	if leaving_channels.find_key(ref) != null:
+		return RefType.Leave
 
-    if _joining_channels.has(channel_name):
-        return false
-    
-    _joining_channels.append(channel_name)
-    return true
+	return RefType.Unknown
 
-## Removes the given channel from the list of channels which should be joined and
-## adds it to the list of joined channels
-func add_joined_channel(channel_name: String) -> bool:
-    if _joined_channels.has(channel_name):
-        return false
+## Generates a new random "ref" aka request id
+func _generate_random_ref() -> int:
+	var random_number = rng.randi()
 
-    if _intermediate_joining_channels.has(channel_name) == false:
-        return false
+	while refs_in_use.has(random_number):
+		random_number = rng.randi()
 
-    _intermediate_joining_channels.erase(channel_name)
-    _joined_channels.append(channel_name)
+	return random_number
 
-    return true
+## This functions adds the given channel name to the list of [code]joining_channels[/code] and returns the generated ref. [br]
+## When the channel is about to be joined it returns -1. [br]
+## When the channel has already been joined it returns -1. [br]
+## When the channel is about to leave, then it will be removed from the [code]leaving_channels[/code] dictionary.
+func add_channel_to_join(channel_name: String) -> int:
+	if joining_channels.has(channel_name):
+		return (-1)
 
-## Leaves the given channel
-## Checks if the channel is joined - if not - false is returned
-## ATTENTION: It will not check if the given channel_name is in the list of channels to join
-func leave_channel(channel_name: String) -> bool:
-    if _leaving_channels.has(channel_name):
-        return false
+	if joined_channels.has(channel_name):
+		return (-1)
 
-    if _joined_channels.has(channel_name) == false:
-        return false
+	if leaving_channels.has(channel_name):
+		# Remove the current ref for the leaving channel
+		var leaving_channel_ref = leaving_channels[channel_name]
+		refs_in_use.erase(leaving_channel_ref)
+		leaving_channels.erase(channel_name)
 
-    _leaving_channels.append(channel_name)
+	var join_ref = _generate_random_ref()
 
-    return true
+	refs_in_use.append(join_ref)
+	joining_channels[channel_name] = join_ref
 
-func filter_channels(channels: Array[String], channel_to_remove: String) -> Array[String]:
-    return channels.filter(func(channel_name): return channel_name != channel_to_remove)
+	return join_ref
 
-func _to_string() -> String:
-    return "Channels { joining: %s, joined: %s, leaving: %s }" % [_joining_channels, _joined_channels, _leaving_channels]
+## This function adds the given channel name to the list of [code]leaving_channels[/code] and returns the generated ref. [br]
+## When the channel is about to be joined it returns -1 and removes the channel from the [code]joining_channels[/code] dictionary. [br]
+## When the channel was never joined it also returns -1.
+func leave_channel(channel_name: String) -> int:
+	if joined_channels.has(channel_name) == false:
+		return (-1)
 
-func get_join_channel_packet(channel_name: String):
-    return JSON.stringify({
-        "topic": ("hr:%s" % channel_name),
-        "event": "phx_join",
-        "payload": {},
-        "ref": 0
-        })
+	if joining_channels.has(channel_name):
+		# Remove the current ref for the joining channel
+		var joining_channel_ref = joining_channels[channel_name]
+		refs_in_use.erase(joining_channel_ref)
+		joining_channels.erase(channel_name)
 
-func get_leave_channel_packet(channel_name: String):
-    return JSON.stringify({
-        "topic": ("hr:%s" % channel_name),
-        "event": "phx_leave",
-        "payload": {},
-        "ref": 0
-        })
+	var leave_ref = _generate_random_ref()
+
+	joined_channels.erase(channel_name)
+	leaving_channels[channel_name] = leave_ref
+	refs_in_use.append(leave_ref)
+
+	return leave_ref
+
+## Returns a string array of channels which should be joined after a connection loss.
+func get_channels_to_join() -> Array[String]:
+	var channels_to_leave = leaving_channels.keys()
+	var result: Array[String] = []
+
+	var channels_to_join = joined_channels
+	channels_to_join.append_array(joining_channels.keys())
+
+	for channel_to_join in channels_to_join:
+		if channels_to_leave.has(channel_to_join):
+			continue
+
+		result.append(channel_to_join)
+
+	return result
+
+## This function gets called when the packet processor determined that the given ref belongs to a channel which was joined on the server.
+func handle_join(ref: int) -> void:
+	var joined_channel_name = joining_channels.find_key(ref)
+
+	if joined_channel_name == null:
+		return
+
+	refs_in_use.erase(ref)
+	joining_channels.erase(joined_channel_name)
+	joined_channels.append(joined_channel_name)
+
+## This function gets called when the packet processor determined that the given ref belongs to a channel which should be left.
+func handle_leave(ref: int) -> void:
+	var left_channel_name = leaving_channels.find_key(ref)
+
+	if left_channel_name == null:
+		return
+
+	refs_in_use.erase(ref)
+	leaving_channels.erase(left_channel_name)
+
+## Empties the channels to join, channels to leave and all refs which are currently used.
+func handle_reconnect() -> void:
+	joining_channels.clear()
+	leaving_channels.clear()
+	refs_in_use.clear()
