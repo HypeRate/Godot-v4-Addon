@@ -21,27 +21,31 @@ func _ready() -> void:
 	HypeRate.connected.connect(on_connect)
 	HypeRate.channel_joined.connect(on_channel_joined)
 	HypeRate.heartbeat_received.connect(on_heartbeat_received)
+	HypeRate.clip_created.connect(on_clip_created)
 	HypeRate.channel_left.connect(on_channel_left)
 	HypeRate.disconnected.connect(on_disconnect)
 	HypeRate.connect_to_server()
 
-func on_connect():
+func on_connect() -> void:
 	print("Connected to HypeRate")
 
-func on_channel_joined(channel_name):
+func on_channel_joined(channel_name: String) -> void:
 	print("Joined channel: %s" % channel_name)
 	
-func on_channel_left(channel_name):
+func on_channel_left(channel_name: String) -> void:
 	print("Left channel: %s" % channel_name)
 
-func on_heartbeat_received(channel, heartbeat):
-	print("Received new heartbeat %s for channel %s" % [heartbeat, channel])
+func on_heartbeat_received(channel_name: String, heartbeat: int) -> void:
+	print("Received new heartbeat %s for ID %s" % [heartbeat, channel_name])
 
-func on_disconnect():
-	print("Disconnect from HypeRate")
+func on_clip_created(channel_name: String, twitch_slug: String) -> void:
+	print("ID %s created a new Twitch Clip: https://clips.twitch.tv/%s" % [channel_name, twitch_slug])
 
-func on_join_channels():
-	HypeRate._channels.add_joining_channel("internal-testing")
+func on_disconnect() -> void:
+	print("Disconnected from HypeRate")
 
-func on_leave_channel():
-	HypeRate._channels.leave_channel("internal-testing")
+func on_join_channels() -> void:
+	HypeRate.join_heartbeat_channel("internal-testing")
+
+func on_leave_channel() -> void:
+	HypeRate.leave_heartbeat_channel("internal-testing")
