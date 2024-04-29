@@ -40,7 +40,7 @@ It contains an exhaustive example on how you would connect the signals of the `H
 
 #### Using a different path for the settings file
 
-If you want to put the HypeRateSettings resource in a different directory other the root project directory, you need to change this line and put the new path in it:
+If you want to put the HypeRateSettings resource in a different directory other the root project directory, you need to change this line in the `hyperate.gd` file and put the new path in it:
 
 ```gdscript
 # Before
