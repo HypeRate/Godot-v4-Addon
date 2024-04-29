@@ -4,6 +4,12 @@ You can find a rendered version here: https://github.com/HypeRate/Godot-v4-Addon
 
 Important note: All functions which are starting with an underscore (`_`) should be considered to be private. They are not part of the public API.
 
+## Important note about the license
+
+Only the addon code itself is released into the public domain under the GPL 2.0 license.
+
+The calling code (your application) can be licensed under any license you wish.
+
 ## Usage
 
 1. Install the addon via the AssetLib in Godot
