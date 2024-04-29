@@ -1,5 +1,7 @@
 extends Resource
 
+class_name HypeRateSettings
+
 @export
 var endpoint_url: String = "wss://app.hyperate.io/socket/websocket"
 

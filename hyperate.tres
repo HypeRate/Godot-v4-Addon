@@ -1,9 +1,0 @@
-[gd_resource type="Resource" load_steps=2 format=3 uid="uid://ua31almaugd7"]
-
-[ext_resource type="Script" path="res://addons/hyperate/hyperate_settings.gd" id="1_3jhyj"]
-
-[resource]
-script = ExtResource("1_3jhyj")
-endpoint_url = "wss://app.hyperate.io/socket/websocket"
-api_token = ""
-heartbeat_interval = 10

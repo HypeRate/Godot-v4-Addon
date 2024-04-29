@@ -3,7 +3,7 @@ extends EditorPlugin
 
 func _enter_tree() -> void:
 	# Add the "HypeRate" custom node to the editor
-	add_custom_type("HypeRateSettings", "Resource", preload("hyperate_settings.gd"), preload("logo.png"))
+	add_custom_type("HypeRateSettings", "Resource", preload ("res://addons/hyperate/hyperate_settings.gd"), preload ("res://addons/hyperate/logo.png"))
 
 	# Let Godot only instantiate one instance of the socket
 	add_autoload_singleton("HypeRate", "res://addons/hyperate/hyperate.gd")
