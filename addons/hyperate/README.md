@@ -1,6 +1,8 @@
 # The official HypeRate Godot v4 addon
 
-Important note: all functions which are starting with an underscore (`_`) should be considered to be private. They are not part of the public API.
+You can find a rendered version here: https://github.com/HypeRate/Godot-v4-Addon/blob/master/addons/hyperate/README.md
+
+Important note: All functions which are starting with an underscore (`_`) should be considered to be private. They are not part of the public API.
 
 ## Usage
 
