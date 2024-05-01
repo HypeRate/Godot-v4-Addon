@@ -127,4 +127,5 @@ func handle_leave(ref: int) -> void:
 func handle_reconnect() -> void:
 	joining_channels.clear()
 	leaving_channels.clear()
+	joined_channels.clear()
 	refs_in_use.clear()
