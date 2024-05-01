@@ -249,8 +249,6 @@ func _rejoin_channels():
 
 	_channels.handle_reconnect()
 
-	HypeRateDevice.new()
-
 	for channel_to_join in channels_to_join:
 		var generated_join_ref = _channels.add_channel_to_join(channel_to_join)
 
